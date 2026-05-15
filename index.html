@@ -303,9 +303,140 @@
         grid-template-columns: 1fr;
       }
     }
+      .warning-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .warning-box {
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      border: 3px solid #293b7a;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+
+    .warning-title {
+      background: #293b7a;
+      color: #fff;
+      padding: 14px 18px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .warning-content {
+      padding: 20px;
+      line-height: 1.8;
+      font-size: 15px;
+      color: #222;
+    }
+
+    .warning-content strong {
+      color: #1d2a5f;
+    }
+
+    .warning-button {
+      width: calc(100% - 40px);
+      margin: 0 20px 20px;
+      padding: 12px;
+      background: #293b7a;
+      color: #fff;
+      border: 1px solid #1d2a5f;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .warning-button:hover {
+      background: #1d2a5f;
+    }
+
+    .poll-box {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #d5d5d5;
+    }
+
+    .poll-title {
+      margin-bottom: 10px;
+      font-weight: 900;
+      color: #293b7a;
+    }
+
+    .poll-row {
+      margin-bottom: 10px;
+    }
+
+    .poll-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .poll-bar-bg {
+      width: 100%;
+      height: 16px;
+      background: #e5e5e5;
+      border: 1px solid #ccc;
+    }
+
+    .poll-bar {
+      height: 100%;
+      width: 0%;
+      background: #293b7a;
+      transition: width 0.25s ease;
+    }
   </style>
 </head>
 <body>
+  <div class="warning-overlay" id="warningOverlay">
+    <div class="warning-box">
+      <div class="warning-title">입장 전 질문</div>
+      <div class="warning-content" id="questionStep1">
+        <strong>당신은 평소에 욕을 하시나요?</strong>
+      </div>
+      <div id="answerStep1" style="display:flex; gap:10px; padding:0 20px 20px;">
+        <button class="warning-button" style="width:50%; margin:0;" onclick="showReasonQuestion()">예</button>
+        <button class="warning-button" style="width:50%; margin:0; background:#666; border-color:#555;" onclick="leaveSite()">아니오</button>
+      </div>
+
+      <div class="warning-content" id="questionStep2" style="display:none;">
+        <strong>당신은 왜 욕을 하시나요?</strong>
+      </div>
+      <div id="answerStep2" style="display:none; padding:0 20px 20px;">
+        <button class="warning-button" style="width:100%; margin:0 0 8px;" onclick="selectReason('감정전달')">감정전달</button>
+        <button class="warning-button" style="width:100%; margin:0 0 8px;" onclick="selectReason('감정해소 및 심리적 해방')">감정해소 및 심리적 해방</button>
+        <button class="warning-button" style="width:100%; margin:0 0 8px;" onclick="selectReason('언어습관')">언어습관</button>
+        <button class="warning-button" style="width:100%; margin:0;" onclick="selectReason('자기위로')">자기위로</button>
+
+        </div>
+
+      <div class="warning-content" id="questionStep3" style="display:none;">
+        <strong>하지만.. 우리는 욕을 해도 법적으로 모욕을 하면 안되잖아요...</strong>
+      </div>
+      <div id="answerStep3" style="display:none; padding:0 20px 20px;">
+        <button class="warning-button" style="width:100%; margin:0 0 8px;" onclick="showFinalQuestion()">알아요...</button>
+        <button class="warning-button" style="width:100%; margin:0; background:#666; border-color:#555;" onclick="showFinalQuestion()">근데요?</button>
+      </div>
+
+      <div class="warning-content" id="questionStep4" style="display:none;">
+        <strong>그럼.. 오늘만큼은 [모욕 생성]으로 들어간 단어는 쓰지 말기로 해요..</strong>
+      </div>
+      <div id="answerStep4" style="display:none; padding:0 20px 20px;">
+        <button class="warning-button" style="width:100%; margin:0 0 8px;" onclick="closeWarning()">네..</button>
+        <button class="warning-button" style="width:100%; margin:0; background:#666; border-color:#555;" onclick="leaveSite()">아니요;;</button>
+      </div>
+    </div>
+  </div>
   <div class="top-logo">
     <div class="gminside-mark">
       <svg width="62" height="62" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -383,6 +514,26 @@
       </div>
     </section>
 
+    <div class="poll-box" style="margin:0 14px 16px; padding:16px; background:#fff; border:1px solid #d5d5d5; border-top:2px solid #293b7a;">
+      <div class="poll-title">사람들은 왜 욕을 할까?</div>
+      <div class="poll-row">
+        <div class="poll-label"><span>감정전달</span><span id="rateEmotion">0%</span></div>
+        <div class="poll-bar-bg"><div class="poll-bar" id="barEmotion"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-label"><span>감정해소 및 심리적 해방</span><span id="rateRelease">0%</span></div>
+        <div class="poll-bar-bg"><div class="poll-bar" id="barRelease"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-label"><span>언어습관</span><span id="rateHabit">0%</span></div>
+        <div class="poll-bar-bg"><div class="poll-bar" id="barHabit"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-label"><span>자기위로</span><span id="rateComfort">0%</span></div>
+        <div class="poll-bar-bg"><div class="poll-bar" id="barComfort"></div></div>
+      </div>
+    </div>
+
     <section class="history">
       <h2>최근 생성 기록</h2>
       <ol id="historyList"></ol>
@@ -390,6 +541,77 @@
   </main>
 
   <script>
+    function showReasonQuestion() {
+      document.getElementById("questionStep1").style.display = "none";
+      document.getElementById("answerStep1").style.display = "none";
+      document.getElementById("questionStep2").style.display = "block";
+      document.getElementById("answerStep2").style.display = "block";
+      updateReasonPoll();
+    }
+
+    function selectReason(reason) {
+      var counts = getReasonCounts();
+      counts[reason] = counts[reason] + 1;
+      localStorage.setItem("reasonCounts", JSON.stringify(counts));
+      updateReasonPoll();
+      setTimeout(showLawQuestion, 500);
+    }
+
+    function getReasonCounts() {
+      var saved = localStorage.getItem("reasonCounts");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      return {
+        "감정전달": 0,
+        "감정해소 및 심리적 해방": 0,
+        "언어습관": 0,
+        "자기위로": 0
+      };
+    }
+
+    function updateReasonPoll() {
+      var counts = getReasonCounts();
+      var total = counts["감정전달"] + counts["감정해소 및 심리적 해방"] + counts["언어습관"] + counts["자기위로"];
+
+      function setRate(rateId, barId, value) {
+        var percent = total === 0 ? 0 : Math.round((value / total) * 100);
+        document.getElementById(rateId).innerText = percent + "%";
+        document.getElementById(barId).style.width = percent + "%";
+      }
+
+      setRate("rateEmotion", "barEmotion", counts["감정전달"]);
+      setRate("rateRelease", "barRelease", counts["감정해소 및 심리적 해방"]);
+      setRate("rateHabit", "barHabit", counts["언어습관"]);
+      setRate("rateComfort", "barComfort", counts["자기위로"]);
+    }
+
+    function showLawQuestion() {
+      document.getElementById("questionStep2").style.display = "none";
+      document.getElementById("answerStep2").style.display = "none";
+      document.getElementById("questionStep3").style.display = "block";
+      document.getElementById("answerStep3").style.display = "block";
+    }
+
+    function showFinalQuestion() {
+      document.getElementById("questionStep3").style.display = "none";
+      document.getElementById("answerStep3").style.display = "none";
+      document.getElementById("questionStep4").style.display = "block";
+      document.getElementById("answerStep4").style.display = "block";
+    }
+
+    function closeWarning() {
+      document.getElementById("warningOverlay").style.display = "none";
+    }
+
+    function leaveSite() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "https://www.google.com";
+      }
+    }
+
     var targets = [
       "학교",
       "과제",
